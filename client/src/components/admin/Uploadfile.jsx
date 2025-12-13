@@ -17,7 +17,7 @@ const Uploadfile = ({ form, setForm }) => {
         const files = e.target.files
         if (files) {
             setIsLoading(true)
-            let allFiles = form.images  // [] empty array
+            let allFiles = form.images || []  // ใช้ค่า default เป็น []
             for (let i = 0; i < files.length; i++) {
                 // console.log(files[i])
 
@@ -84,22 +84,24 @@ const Uploadfile = ({ form, setForm }) => {
     }
     return (
         <div className='my-4'>
-            <div className='flex mx-4 gap-4 my-4'>
+            <div className='flex mx-4 gap-4 my-4 flex-wrap'>
                 {
                     isLoading && <Loader className='w-16 h-16 animate-spin'/>
                 }
                 
                 {/* Image */}
                 {
-                    form.images.map((item, index) =>
+                    form.images && form.images.map((item, index) =>
                         <div className='relative' key={index}>
                             <img
                                 className='w-24 h-24 hover:scale-105'
-                                src={item.url} />
-
+                                src={item.url} 
+                            />
                             <span
                                 onClick={() => handleDelete(item.public_id)}
-                                className='absolute top-0 right-0 bg-red-500 p-1 rounded-md'>X</span>
+                                className='absolute top-0 right-0 bg-red-500 p-1 rounded-md cursor-pointer hover:bg-red-600'>
+                                X
+                            </span>
                         </div>
                     )
                 }

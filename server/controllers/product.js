@@ -36,14 +36,14 @@ exports.create = async (req, res) => {
         const product = await prisma.product.create({
             data: {
                 title,
-                description,
+                description: typeof description === 'string' ? JSON.parse(description) : description,
                 price: parseFloat(price),
                 quantity: Number(quantity),
                 // *** ใส่ ID ให้ถูกช่อง ***
                 categoryId: subCategoryInfo.categoryId, // ใส่ ID พ่อ (ที่หาเจอจาก Database)
                 subCategoryId: subCatId,                // ใส่ ID ลูก (ที่ส่งมาจาก Frontend)
                 // ***********************
-                images: {
+                carges: {
                     create: images.map(item => ({
                         asset_id: item.asset_id,
                         public_id: item.public_id,
@@ -91,7 +91,7 @@ exports.list = async(req,res) =>{
             include: {
                 category: true,
                 subCategory: true,
-                images: true
+                carges: true
             } 
         });
         res.send(products);
@@ -111,7 +111,7 @@ exports.read = async(req,res) =>{
             include: {
                 category: true,
                 subCategory: true,
-                images: true
+                carges: true
             } 
         });
         res.send(product);
@@ -175,20 +175,22 @@ exports.update = async (req, res) => {
             where: { id: productId },
             data: {
                 title: title,
-                description: description,
+                description: typeof description === 'string' ? JSON.parse(description) : description,
                 price: newPrice,
                 quantity: parseInt(quantity),
                 categoryId: subCategoryInfo.categoryId,
                 subCategoryId: subCatId,
-                properties: properties, // อัปเดต properties ด้วย
-                images: {
-                    create: images.map((item) => ({
-                        asset_id: item.asset_id,
-                        public_id: item.public_id,
-                        url: item.url,
-                        secure_url: item.secure_url,
-                    })),
-                },
+                // เพิ่มรูปใหม่ได้เฉพาะกรณีที่มี images
+                ...(images && images.length > 0 && {
+                    carges: {
+                        create: images.map((item) => ({
+                            asset_id: item.asset_id,
+                            public_id: item.public_id,
+                            url: item.url,
+                            secure_url: item.secure_url,
+                        })),
+                    },
+                }),
             },
         });
 
@@ -206,7 +208,7 @@ exports.remove = async(req,res) => {
 
         const product = await prisma.product.findUnique({
             where : { id: Number(id) },
-            include: { images: true }
+            include: { carges: true }
         });
 
         if (!product){
@@ -214,7 +216,7 @@ exports.remove = async(req,res) => {
         }
 
         // ลบรูปใน Cloudinary
-        const deleteImage = product.images.map((image) =>
+        const deleteImage = product.carges.map((image) =>
             new Promise((resolve,reject) =>{
                 cloudinary.uploader.destroy(image.public_id,(error,result) =>{
                     if (error) reject(error);
@@ -224,10 +226,7 @@ exports.remove = async(req,res) => {
         );
         await Promise.all(deleteImage);
 
-        // ลบสินค้า
-        await prisma.product.delete({ where:{ id:Number(id) } });
-
-        // สร้าง log
+        // สร้าง log ก่อนลบสินค้า
         await prisma.adminLog.create({
             data:{
                 adminId: req.user.id,
@@ -236,6 +235,9 @@ exports.remove = async(req,res) => {
                 message: `ลบสินค้า ${product.title}`
             }
         });
+
+        // ลบสินค้า
+        await prisma.product.delete({ where:{ id:Number(id) } });
 
         res.send('Deleted Success');
 
@@ -352,11 +354,16 @@ exports.listAdminLogs = async (req, res) => {
 exports.listby = async (req, res) => {
     try {
       const { sort = "createdAt", order = "desc", limit = 10 } = req.body;
+      
+      // Validate sort field - allow only valid Product fields
+      const validSortFields = ['id', 'title', 'price', 'sold', 'quantity', 'createdAt', 'updatedAt'];
+      const sortField = validSortFields.includes(sort) ? sort : 'createdAt';
+      const sortOrder = ['asc', 'desc'].includes(order) ? order : 'desc';
   
       const products = await prisma.product.findMany({
         take: Number(limit),
-        orderBy: { [sort]: order },
-        include: { images: true, category: true, subCategory: true },
+        orderBy: { [sortField]: sortOrder },
+        include: { carges: true, category: true, subCategory: true },
       });
   
       res.send(products);

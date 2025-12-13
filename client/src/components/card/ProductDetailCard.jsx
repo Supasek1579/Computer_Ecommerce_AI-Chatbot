@@ -59,13 +59,13 @@ const ProductDetailCard = () => {
       >
         {/* Left: รูปสินค้า */}
         <div className="md:w-1/2 flex flex-col items-center justify-center gap-4">
-          {product.images && product.images.length > 0 ? (
+          {product.carges && product.carges.length > 0 ? (
             <Swiper
               navigation={true}
               modules={[Navigation]}
               className="w-full h-64 md:h-96 rounded-lg"
             >
-              {product.images.map((img, index) => (
+              {product.carges.map((img, index) => (
                 <SwiperSlide key={index}>
                   <img
                     src={img.url}
@@ -126,7 +126,50 @@ const ProductDetailCard = () => {
         {/* Tab Content */}
         <div>
           {activeTab === "details" && (
-            <p className="text-gray-700">{product.description}</p>
+            <div>
+              {/* ตรวจสอบ description เป็น JSON object หรือไม่ */}
+              {typeof product.description === "object" && 
+               product.description !== null &&
+               Object.keys(product.description).length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-200 border border-gray-300">
+                        <th className="border border-gray-300 p-3 text-left font-semibold text-gray-800">
+                          คุณสมบัติ
+                        </th>
+                        <th className="border border-gray-300 p-3 text-left font-semibold text-gray-800">
+                          รายละเอียด
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(product.description).map(
+                        ([key, value], index) => (
+                          <tr
+                            key={index}
+                            className={
+                              index % 2 === 0
+                                ? "bg-white border border-gray-300"
+                                : "bg-gray-50 border border-gray-300"
+                            }
+                          >
+                            <td className="border border-gray-300 p-3 font-semibold text-gray-700">
+                              {key}
+                            </td>
+                            <td className="border border-gray-300 p-3 text-gray-700">
+                              {value}
+                            </td>
+                          </tr>
+                        )
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">ไม่มีข้อมูลรายละเอียด</p>
+              )}
+            </div>
           )}
           {activeTab === "spec" && (
             <ul className="list-disc pl-6 text-gray-700">

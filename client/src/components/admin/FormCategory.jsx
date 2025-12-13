@@ -93,7 +93,7 @@ const FormCategory = () => {
                         onChange={(e) => setName(e.target.value)}
                         className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         type='text'
-                        placeholder="เช่น เสื้อผ้า, รองเท้า, iPhone..." 
+                        placeholder="เช่น CPU, การ์ดจอ, โน้ตบุ๊ค" 
                         required 
                     />
                 </div>

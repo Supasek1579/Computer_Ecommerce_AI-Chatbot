@@ -18,7 +18,7 @@ import ProductFilterHeader from "./ProductFilterHeader";
 
 const initialState = {
   title: "",
-  description: "",
+  description: {}, // เปลี่ยนจาก string เป็น object
   price: 0,
   quantity: 0,
   categoryId: "",
@@ -34,6 +34,8 @@ const FormProduct = () => {
 
   const [form, setForm] = useState(initialState);
   const [selectedMainId, setSelectedMainId] = useState("");
+  const [specKey, setSpecKey] = useState(""); // key สำหรับ specification
+  const [specValue, setSpecValue] = useState(""); // value สำหรับ specification
 
   const actionDeleteProduct = useEcomStore((state) => state.actionDeleteProduct);
 
@@ -69,13 +71,45 @@ const FormProduct = () => {
       const res = await createProduct(token, form);
       const productTitle = res.data?.product?.title || form.title;
       toast.success(`เพิ่มสินค้า ${productTitle} เรียบร้อย`);
-      setForm(initialState);
+      // Reset form ให้กลับมาเป็นค่า initial
+      setForm({
+        title: "",
+        description: {},
+        price: 0,
+        quantity: 0,
+        categoryId: "",
+        images: [],
+      });
+      setSpecKey("");
+      setSpecValue("");
       getProduct(1000);
       setSelectedMainId("");
     } catch (err) {
       const errMsg = err.response?.data?.message || "Something went wrong";
       toast.error(errMsg);
     }
+  };
+
+  // ฟังก์ชันสำหรับเพิ่ม specification
+  const handleAddSpec = () => {
+    if (specKey.trim() && specValue.trim()) {
+      setForm({
+        ...form,
+        description: {
+          ...form.description,
+          [specKey]: specValue,
+        },
+      });
+      setSpecKey("");
+      setSpecValue("");
+    }
+  };
+
+  // ฟังก์ชันสำหรับลบ specification
+  const handleRemoveSpec = (key) => {
+    const newDesc = { ...form.description };
+    delete newDesc[key];
+    setForm({ ...form, description: newDesc });
   };
 
   const handleDelete = async (id) => {
@@ -161,7 +195,7 @@ const FormProduct = () => {
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
               ชื่อสินค้า
@@ -173,18 +207,6 @@ const FormProduct = () => {
               name="title"
               placeholder="Product Title"
               required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              รายละเอียด
-            </label>
-            <textarea
-              className="border border-gray-300 p-2.5 rounded-md w-full h-[46px] resize-none focus:ring-2 focus:ring-blue-500 outline-none overflow-hidden transition"
-              onChange={handleOnChange}
-              value={form.description ?? ""}
-              name="description"
-              placeholder="Description"
             />
           </div>
         </div>
@@ -266,6 +288,63 @@ const FormProduct = () => {
           </div>
         </div>
 
+        <div className="space-y-2 border-t pt-4">
+          <label className="block text-sm font-medium text-gray-700">
+            รายละเอียด (Specifications)
+          </label>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                className="border border-gray-300 p-2.5 rounded-md flex-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="เช่น Brand, Model, Socket..."
+                value={specKey}
+                onChange={(e) => setSpecKey(e.target.value)}
+              />
+              <input
+                className="border border-gray-300 p-2.5 rounded-md flex-1 focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="เช่น AMD, RYZEN 7 9800X3D..."
+                value={specValue}
+                onChange={(e) => setSpecValue(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={handleAddSpec}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
+              >
+                เพิ่ม
+              </button>
+            </div>
+            
+            {/* แสดงรายการ specifications ที่เพิ่มแล้ว */}
+            {Object.keys(form.description).length > 0 && (
+              <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                <div className="text-sm font-semibold text-gray-700 mb-2">
+                  Specifications ที่เพิ่มแล้ว:
+                </div>
+                <div className="space-y-2">
+                  {Object.entries(form.description).map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex justify-between items-center bg-white p-2 rounded border border-gray-200"
+                    >
+                      <span className="text-sm text-gray-700">
+                        <strong>{key}:</strong> {value}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSpec(key)}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                      >
+                        ลบ
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="border-t pt-4">
           <Uploadfile form={form} setForm={setForm} />
         </div>
@@ -323,10 +402,10 @@ const FormProduct = () => {
                     </td>
                     <td className="p-3 text-center align-middle">
                       <div className="flex justify-center">
-                        {item.images.length > 0 ? (
+                        {item.carges && item.carges.length > 0 ? (
                           <img
                             className="w-12 h-12 rounded-md shadow-sm object-cover border border-gray-200"
-                            src={item.images[0].url}
+                            src={item.carges[0].url}
                             alt={item.title}
                           />
                         ) : (
@@ -342,12 +421,6 @@ const FormProduct = () => {
                         title={item.title}
                       >
                         {item.title}
-                      </div>
-                      <div
-                        className="text-xs text-gray-400 truncate mt-1"
-                        title={item.description}
-                      >
-                        {item.description}
                       </div>
                     </td>
                     <td className="p-3 text-right align-middle font-mono font-semibold text-gray-700">

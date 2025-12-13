@@ -8,7 +8,7 @@ import { Box, Save, ArrowLeft } from "lucide-react"; // เพิ่ม Icons
 
 const initialState = {
   title: "",
-  description: "",
+  description: {},
   price: 0,
   quantity: 0,
   categoryId: "",
@@ -25,6 +25,8 @@ const FormEditProduct = () => {
 
   const [form, setForm] = useState(initialState);
   const [selectedMainId, setSelectedMainId] = useState(""); // เก็บ Main Category ID
+  const [specKey, setSpecKey] = useState(""); // key สำหรับ specification
+  const [specValue, setSpecValue] = useState(""); // value สำหรับ specification
 
   // 1. โหลดข้อมูล Categories และ Product เมื่อเข้ามาหน้านี้
   useEffect(() => {
@@ -41,12 +43,12 @@ const FormEditProduct = () => {
       setForm({
           ...res.data,
           // Mapping ให้ตรงกับ Form: categoryId ในฟอร์มเราคือ SubCategory ID
-          categoryId: res.data.subCategoryId // หรือ res.data.categoryId ขึ้นอยู่กับ Backend ที่คุณส่งกลับมา
+          categoryId: res.data.subCategoryId,
+          // Mapping carges เป็น images เพื่อให้สามารถแสดงรูปเดิม
+          images: res.data.carges || []
       });
 
       // ตั้งค่า Main Category เพื่อให้ Dropdown แสดงถูกตัว
-      // (สมมติ Backend ส่ง categoryId มาเป็น Main ID หรือเราต้องหาเอง)
-      // กรณีที่คุณเก็บ categoryId เป็น Main ใน DB:
       setSelectedMainId(res.data.categoryId); 
       
     } catch (err) {
@@ -57,6 +59,28 @@ const FormEditProduct = () => {
 
   const handleOnChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // ฟังก์ชันสำหรับเพิ่ม specification
+  const handleAddSpec = () => {
+    if (specKey.trim() && specValue.trim()) {
+      setForm({
+        ...form,
+        description: {
+          ...form.description,
+          [specKey]: specValue,
+        },
+      });
+      setSpecKey("");
+      setSpecValue("");
+    }
+  };
+
+  // ฟังก์ชันสำหรับลบ specification
+  const handleRemoveSpec = (key) => {
+    const newDesc = { ...form.description };
+    delete newDesc[key];
+    setForm({ ...form, description: newDesc });
   };
 
   const handleSubmit = async (e) => {
@@ -97,7 +121,7 @@ const FormEditProduct = () => {
         </div>
 
         {/* Title & Description */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">ชื่อสินค้า</label>
             <input
@@ -107,16 +131,6 @@ const FormEditProduct = () => {
               name="title"
               placeholder="Product Title"
               required
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">รายละเอียด</label>
-            <textarea
-              className="border border-gray-300 p-2.5 rounded-md w-full h-[46px] resize-none focus:ring-2 focus:ring-yellow-400 outline-none overflow-hidden transition"
-              onChange={handleOnChange}
-              value={form.description}
-              name="description"
-              placeholder="Description"
             />
           </div>
         </div>
@@ -176,7 +190,7 @@ const FormEditProduct = () => {
             <select
               className="border border-gray-300 p-2.5 rounded-md w-full focus:ring-2 focus:ring-yellow-400 outline-none bg-white cursor-pointer disabled:bg-gray-100"
               name="categoryId"
-              value={form.categoryId} // ค่านี้คือ SubCategory ID
+              value={form.categoryId}
               onChange={handleOnChange}
               disabled={!selectedMainId}
               required
@@ -188,6 +202,83 @@ const FormEditProduct = () => {
                 </option>
               ))}
             </select>
+          </div>
+        </div>
+
+        {/* Specifications */}
+        <div className="space-y-2 border-t pt-4">
+          <label className="block text-sm font-medium text-gray-700">
+            รายละเอียด (Specifications)
+          </label>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                className="border border-gray-300 p-2.5 rounded-md flex-1 focus:ring-2 focus:ring-yellow-400 outline-none"
+                placeholder="เช่น Brand, Model, Socket..."
+                value={specKey}
+                onChange={(e) => setSpecKey(e.target.value)}
+              />
+              <input
+                className="border border-gray-300 p-2.5 rounded-md flex-1 focus:ring-2 focus:ring-yellow-400 outline-none"
+                placeholder="เช่น AMD, RYZEN 7 9800X3D..."
+                value={specValue}
+                onChange={(e) => setSpecValue(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={handleAddSpec}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
+              >
+                เพิ่ม
+              </button>
+            </div>
+            
+            {/* แสดงรายการ specifications ที่เพิ่มแล้ว */}
+            {Object.keys(form.description).length > 0 && (
+              <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                <div className="text-sm font-semibold text-gray-700 mb-2">
+                  Specifications ที่เพิ่มแล้ว:
+                </div>
+                <div className="space-y-2">
+                  {Object.entries(form.description).map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex justify-between items-center bg-white p-2 rounded border border-gray-200"
+                    >
+                      <div className="flex gap-2 flex-1">
+                        <input
+                          type="text"
+                          value={key}
+                          disabled
+                          className="flex-1 p-1 px-2 bg-gray-100 rounded text-sm text-gray-600 border border-gray-300"
+                        />
+                        <input
+                          type="text"
+                          value={value}
+                          onChange={(e) => {
+                            setForm({
+                              ...form,
+                              description: {
+                                ...form.description,
+                                [key]: e.target.value,
+                              },
+                            });
+                          }}
+                          className="flex-1 p-1 px-2 rounded text-sm border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSpec(key)}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium ml-2"
+                      >
+                        ลบ
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

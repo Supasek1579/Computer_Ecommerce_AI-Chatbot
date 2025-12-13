@@ -56,10 +56,10 @@ const CartCard = () => {
                     <div className="flex gap-4 items-start w-full">
                         {/* Product Image */}
                         <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                            {item.images && item.images.length > 0 ? (
+                            {item.carges && item.carges.length > 0 ? (
                             <img
                                 className="w-full h-full object-cover"
-                                src={item.images[0].url}
+                                src={item.carges[0].url}
                                 alt={item.title}
                             />
                             ) : (
@@ -72,7 +72,6 @@ const CartCard = () => {
                         {/* Product Details */}
                         <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-gray-800 truncate pr-4">{item.title}</h3>
-                            <p className="text-sm text-gray-500 line-clamp-2 mt-1">{item.description}</p>
                             <p className="text-sm text-indigo-600 font-medium mt-1 md:hidden">
                                 {numberFormat(item.price)} ฿
                             </p>

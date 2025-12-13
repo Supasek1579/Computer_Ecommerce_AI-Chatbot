@@ -60,14 +60,14 @@ model Address {
 model Product {
   id          Int              @id @default(autoincrement())
   title       String
-  description String           @db.Text
+  description Json?            // เก็บ specifications เป็น JSON {key: value}
   price       Float
   sold        Int              @default(0)
   quantity    Int
   orderItems  ProductOnOrder[]
   carges      Image[]
   cretItems   ProductOnCart[]
-  imaatedAt   DateTime         @default(now())
+  createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
   // Relation กับ SubCategory
