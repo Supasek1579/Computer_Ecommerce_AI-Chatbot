@@ -1,60 +1,112 @@
-1) แตกไฟล์/เปิดโปรเจกต์
-- แตกไฟล์ ZIP แล้วควรมีโฟลเดอร์หลัก: client/ และ server/
+#Computer E-commerce AI Chatbot - คู่มือการติดตั้ง
 
-2) สร้างฐานข้อมูล MySQL
-- เข้า MySQL แล้วสร้าง DB (ชื่อให้ตรงกับ DATABASE_URL)
-  ตัวอย่าง:
-  CREATE DATABASE ai_ecom CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+## 1️⃣ เตรียมการและแตกไฟล์โปรเจกต์
 
-3) ติดตั้งและรันฝั่ง Server (Node + Prisma)
-3.1 ติดตั้งแพ็กเกจ
-- cd server
-- npm install
-- npm i nodemon
+แตกไฟล์ ZIP ให้ได้โฟลเดอร์ดังนี้:
+├── client/          (React + Vite)
+├── server/          (Node + Express + Prisma)
+├── README.txt       (ไฟล์นี้)
+└── README.md
 
-3.2 ตั้งค่าไฟล์ server/.env (ใส่ค่าของคุณเอง)
-- DATABASE_URL="mysql://USER:PASS@localhost:3306/DBNAME"
-- SECRET="your_secret"
-- STRIPE_SECRET_KEY="sk_test_xxx"
-- CLOUDINARY_CLOUD_NAME="xxx"
-- CLOUDINARY_API_KEY="xxx"
-- CLOUDINARY_API_SECRET="xxx"
-(ถ้าโปรเจกต์ใช้ส่งอีเมล)
-- EMAIL_USER="xxx"
-- EMAIL_PASS="xxx"   (แนะนำเป็น Gmail App Password)
+## 2️⃣ สร้างฐานข้อมูล MySQL
 
-หมายเหตุสำคัญ:
-- ถ้าเคยแชร์ .env ที่มี key จริง ให้เปลี่ยน/rotate key ทันที และอย่า commit .env
+เปิด MySQL Client และสร้างฐานข้อมูล:
 
-3.3 สร้างตาราง + Generate Prisma Client
-- npx prisma migrate dev
-- npx prisma generate
+CREATE DATABASE ai_ecom CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-3.4 รัน Server
-- npm start
-- เปิดทดสอบ: http://localhost:5001 (พอร์ตอาจต่างตามโปรเจกต์)
 
-4) ติดตั้งและรันฝั่ง Client (React/Vite)
-4.1 ติดตั้งแพ็กเกจ
-- cd client
-- npm install
+## 3️⃣ ตั้งค่า Server (Node.js + Prisma)
 
-4.2 (ถ้าใช้ Stripe ฝั่งหน้าเว็บ) สร้าง client/.env
-- VITE_STRIPE_PK="pk_test_xxx"
+### 3.1 ติดตั้งแพ็กเกจ
 
-4.3 รัน Client
-- npm run dev
-- เข้าเว็บ: http://localhost:5173
+cd server
+npm install
+npm install nodemon
 
-5) ทำให้เป็น Admin (ถ้าต้องการ)
-- cd server
-- npx prisma studio
-- แก้ user ที่ต้องการให้ role = "admin"
+### 3.2 สร้างไฟล์ .env ใน server/
 
-6) ปัญหาที่พบบ่อย (สั้นๆ)
-- @prisma/client did not initialize yet:
-  cd server && npx prisma generate
-- ต่อ DB ไม่ได้:
-  เช็ค DATABASE_URL, MySQL เปิดอยู่, และสร้าง DB แล้ว
-- Client ยิง API ไม่ได้:
-  เช็ค server รันอยู่, URL API ใน client/src/api/* และพอร์ตให้ตรงกัน
+DATABASE_URL="mysql://username:password@localhost:3306/ai_ecom"
+SECRET="อันที่มึงมีอ่ะ"
+STRIPE_SECRET_KEY="อันนี้ไม่น่าใด้ใช้"
+STRIPE_PUBLISHABLE_KEY="อันนี้ไม่น่าใด้ใช้ด้วย"
+
+CLOUDINARY_CLOUD_NAME="ชื่อ CLOUDINARY ท่าน"
+CLOUDINARY_API_KEY="ชื่อ API CLOUDINARY ท่าน"
+CLOUDINARY_API_SECRET="ชื่อ SECRT CLOUDINARY ท่าน"
+
+EMAIL_USER="อันนี้จำเป็นไหม"
+EMAIL_PASS="อันนี้จำเป็นไหม"
+
+> ⚠️ **สำคัญ**: ห้ามแชร์ .env ต่อสาธารณะ! เพิ่ม .env ลง .gitignore
+
+### 3.3 สร้างตาราง Database
+cd server
+npx prisma migrate dev
+npx prisma generate
+
+### 3.4 รัน Server
+npm start
+
+✅ Server พร้อมใช้งาน: `http://localhost:5001`
+
+
+## 4️⃣ ตั้งค่า Client (React + Vite)
+
+### 4.1 ติดตั้งแพ็กเกจ
+cd client
+npm install
+npm install lucide-react
+
+### 4.2 สร้างไฟล์ .env ใน client/ (ถ้าต้องการ)
+
+VITE_API_URL="http://localhost:5001"
+
+### 4.3 รัน Client (Development)
+
+npm run dev
+
+✅ เข้าเว็บ: `http://localhost:5173`
+
+
+## 🐛 แก้ไขปัญหาทั่วไป
+
+| ปัญหา | วิธีแก้ |
+|------|-------|
+| **@prisma/client ยังไม่ init** | `cd server && npx prisma generate` |
+| **ต่อ Database ไม่ได้** | ตรวจสอบ DATABASE_URL, MySQL เปิด, สร้าง DB แล้ว |
+| **Client ยิง API ไม่ได้** | ตรวจสอบ Server รันอยู่, พอร์ต 5001 เปิด |
+| **รูปไม่อัพโหลดได้** | ตรวจสอบ Cloudinary Credentials ใน .env |
+| **Stripe ไม่ทำงาน** | ใช้ Stripe Test Key, ทดสอบแบบ Publishable Key ใน Frontend |
+| **Chatbot ไม่ตอบ** | ตรวจสอบ ngrok URL, n8n Workflow ทำงาน |
+
+---
+
+## 📦 โครงสร้างไฟล์
+
+```
+server/
+├── config/           (ตั้งค่า Database)
+├── controllers/      (API Logic)
+│   ├── product.js    (สินค้า)
+│   ├── auth.js       (ลงทะเบียน/เข้าสู่ระบบ)
+│   ├── order.js      (Order)
+│   ├── stripe.js     (ชำระเงิน)
+│   └── ...
+├── middlewares/      (Middleware)
+├── routes/          (API Routes)
+├── prisma/
+│   └── schema.prisma (Database Schema)
+└── server.js
+
+client/
+├── src/
+│   ├── api/         (API Calls)
+│   ├── components/  (React Components)
+│   ├── pages/       (หน้า)
+│   ├── layouts/     (Layout)
+│   ├── routes/      (Route Protection)
+│   ├── store/       (Zustand Store)
+│   ├── App.jsx
+│   └── main.jsx
+└── vite.config.js
+```
