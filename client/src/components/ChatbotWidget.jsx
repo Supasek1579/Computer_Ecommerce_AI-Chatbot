@@ -2,6 +2,48 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Send, X, MessageCircle, HeadphonesIcon } from "lucide-react";
 
+// Function เพื่อแปลง URL ในข้อความเป็น clickable links
+const parseMessageWithLinks = (text) => {
+  const urlPattern = /(https?:\/\/[^\s]+|\/product\/\d+)/g;
+  const parts = text.split(urlPattern);
+  
+  return parts.map((part, index) => {
+    if (urlPattern.test(part)) {
+      // ถ้าเป็น URL ให้สร้าง link
+      if (part.startsWith("/product/")) {
+        // URL แบบ /product/id - ใช้ onClick navigate
+        return (
+          <a
+            key={index}
+            href={part}
+            className="text-blue-700 hover:text-blue-900 underline font-semibold cursor-pointer hover:bg-blue-50 px-1 rounded"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = part;
+            }}
+          >
+            {part}
+          </a>
+        );
+      } else if (part.startsWith("http")) {
+        // URL แบบ http/https - เปิด tab ใหม่
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-700 hover:text-blue-900 underline font-semibold hover:bg-blue-50 px-1 rounded"
+          >
+            {part}
+          </a>
+        );
+      }
+    }
+    return <span key={index}>{part}</span>;
+  });
+};
+
 const ChatbotWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -145,7 +187,7 @@ const ChatbotWidget = () => {
                         }
                       `}
                     >
-                      {msg.text}
+                      {isUser ? msg.text : parseMessageWithLinks(msg.text)}
                     </div>
                   </div>
                 </div>

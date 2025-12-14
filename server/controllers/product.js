@@ -39,6 +39,7 @@ exports.create = async (req, res) => {
                 description: typeof description === 'string' ? JSON.parse(description) : description,
                 price: parseFloat(price),
                 quantity: Number(quantity),
+                productUrl: `/product/${null}`, // Temp ก่อน จะแก้ไขให้ใช้ ID หลังจากสร้าง
                 // *** ใส่ ID ให้ถูกช่อง ***
                 categoryId: subCategoryInfo.categoryId, // ใส่ ID พ่อ (ที่หาเจอจาก Database)
                 subCategoryId: subCatId,                // ใส่ ID ลูก (ที่ส่งมาจาก Frontend)
@@ -52,6 +53,12 @@ exports.create = async (req, res) => {
                     }))
                 }
             }
+        });
+
+        // 2.1 อัปเดต productUrl ให้รวมถึง product ID
+        const updatedProduct = await prisma.product.update({
+            where: { id: product.id },
+            data: { productUrl: `/product/${product.id}` }
         });
 
         // 3. สร้าง log การสร้างสินค้า
@@ -74,7 +81,7 @@ exports.create = async (req, res) => {
             }
         });
 
-        res.send(product);
+        res.send(updatedProduct);
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: "create product controllers Error" });
@@ -178,6 +185,7 @@ exports.update = async (req, res) => {
                 description: typeof description === 'string' ? JSON.parse(description) : description,
                 price: newPrice,
                 quantity: parseInt(quantity),
+                productUrl: `/product/${productId}`,
                 categoryId: subCategoryInfo.categoryId,
                 subCategoryId: subCatId,
                 // เพิ่มรูปใหม่ได้เฉพาะกรณีที่มี images
