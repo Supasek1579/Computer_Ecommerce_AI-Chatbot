@@ -389,10 +389,6 @@ exports.getOrder = async (req,res) => {
           orderBy: { createdAt: "desc" }
       });
 
-      if (orders.length === 0){  
-          return res.status(400).json({ success: false , message: 'No orders' });
-      }
-
       res.json({ success: true, orders });
 
   } catch (err) {

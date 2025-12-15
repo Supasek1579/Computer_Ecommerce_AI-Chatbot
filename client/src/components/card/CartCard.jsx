@@ -75,6 +75,9 @@ const CartCard = () => {
                             <p className="text-sm text-indigo-600 font-medium mt-1 md:hidden">
                                 {numberFormat(item.price)} ฿
                             </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                คงเหลือ: <span className="font-semibold text-gray-700">{item.quantity}</span> ชิ้น
+                            </p>
                         </div>
                     </div>
 
@@ -104,7 +107,9 @@ const CartCard = () => {
                         
                         <button
                         onClick={() => actionUpdateQuantity(item.id, item.count + 1)}
-                        className="p-1 rounded-md hover:bg-white hover:shadow-sm text-gray-600 transition-all"
+                        className="p-1 rounded-md hover:bg-white hover:shadow-sm text-gray-600 disabled:opacity-30 transition-all"
+                        disabled={item.count >= item.quantity}
+                        title={item.count >= item.quantity ? "เกินจำนวนสินค้าที่มี" : "เพิ่มจำนวน"}
                         >
                         <Plus size={16} />
                         </button>

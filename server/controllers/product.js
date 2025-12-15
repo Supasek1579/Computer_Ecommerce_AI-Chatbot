@@ -261,11 +261,10 @@ const handleQuery = async(req,res,query) => {
     const products = await prisma.product.findMany({
     where: { 
                     title: { 
-                        startsWith: query, // <--- แก้จาก contains เป็น startsWith
-                        // mode: 'insensitive' // (ถ้าใช้ PostgreSQL ให้เปิดบรรทัดนี้เพื่อให้ I เท่ากับ i)
+                        contains: query
                     } 
                 },
-    include: { category:true, subCategory:true, images:true }
+    include: { category:true, subCategory:true, carges:true }
      });
      res.send(products);
      } catch (err){
@@ -278,7 +277,7 @@ const handlePrice = async(req,res,priceRange) =>{
     try{
         const products = await prisma.product.findMany({
             where:{ price:{ gte: priceRange[0], lte: priceRange[1] } },
-            include:{ category:true, subCategory:true, images:true }
+            include:{ category:true, subCategory:true, carges:true }
         });
         res.send(products);
     } catch (err){
@@ -296,7 +295,7 @@ const handleCategory = async(req,res,categoryId) =>{
                         in: categoryId.map(id=> Number(id)) 
                     } 
                 },
-     include:{ category:true, subCategory:true, images:true }
+     include:{ category:true, subCategory:true, carges:true }
      });
      res.send(products);
      } catch (err){
