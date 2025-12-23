@@ -65,8 +65,8 @@ model Product {
   sold        Int              @default(0)
   quantity    Int
   orderItems  ProductOnOrder[]
-  carges      Image[]
-  cretItems   ProductOnCart[]
+  images      Image[]
+  cartItems   ProductOnCart[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
